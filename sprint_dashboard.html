@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprint OS — Onboarding Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #030912;
+    --bg2: #070f1c;
+    --bg3: #0a1628;
+    --panel: #0d1f35;
+    --panel2: #102540;
+    --accent: #00d4ff;
+    --accent2: #0088aa;
+    --accent3: #00ff9d;
+    --accent4: #ff6b35;
+    --text: #e8f4f8;
+    --text2: #7ab8cc;
+    --text3: #3d7a94;
+    --border: #1a3a52;
+    --border2: #00d4ff22;
+    --grid: #0a2035;
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Rajdhani', sans-serif;
+    --body: 'Inter', sans-serif;
+    --glow: 0 0 20px #00d4ff22;
+    --glow2: 0 0 40px #00d4ff15;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center center;
+  }
+
+  .scanline {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .logo {
+    font-family: var(--display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .logo span { color: var(--text3); font-weight: 400; }
+
+  .status-bar {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text3);
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent3);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .input-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2rem;
+    margin: 2rem 0;
+    position: relative;
+  }
+
+  .input-section::before {
+    content: 'STARTUP CONFIG';
+    position: absolute;
+    top: -10px; left: 20px;
+    background: var(--bg2);
+    padding: 0 8px;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+  }
+
+  .input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+  }
+
+  .field label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.6rem 0.8rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 2px var(--border2);
+  }
+
+  .field select option { background: var(--bg3); }
+
+  .btn-generate {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 0.6rem 1.5rem;
+    font-family: var(--display);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-generate:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .dashboard { display: none; }
+  .dashboard.active { display: block; animation: fadeIn 0.4s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .meta-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .meta-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .meta-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .meta-card .label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .meta-card .value {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .risks-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent4);
+    border-radius: 4px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .risks-section::before {
+    content: 'KEY RISKS';
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--accent4);
+    letter-spacing: 0.15em;
+    display: block;
+    margin-bottom: 0.8rem;
+  }
+
+  .risk-item {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    padding: 0.4rem 0;
+    font-size: 0.82rem;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .risk-item:last-child { border-bottom: none; }
+  .risk-icon { color: var(--accent4); font-family: var(--mono); font-size: 0.7rem; padding-top: 2px; flex-shrink: 0; }
+
+  .timeline {
+    display: flex;
+    gap: 0;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .month-tab {
+    flex: 1;
+    padding: 0.8rem 0.5rem;
+    text-align: center;
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    background: var(--panel);
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .month-tab:last-child { border-right: none; }
+
+  .month-tab .month-num {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    display: block;
+  }
+
+  .month-tab .month-theme {
+    font-family: var(--display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .month-tab.active {
+    background: var(--panel2);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  .month-tab.active .month-theme { color: var(--accent); }
+  .month-tab.active .month-num { color: var(--accent2); }
+
+  .month-tab:hover:not(.active) { background: var(--panel2); }
+
+  .month-content {
+    display: none;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .month-content.active { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+  .month-header {
+    grid-column: 1 / -1;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
+  }
+
+  .month-header .theme-label {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .month-header .vertical-focus {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--accent3);
+    margin-top: 0.3rem;
+    letter-spacing: 0.1em;
+  }
+
+  .month-header .description {
+    font-size: 0.85rem;
+    color: var(--text2);
+    margin-top: 0.5rem;
+    line-height: 1.6;
+  }
+
+  .col-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .item {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    padding: 0.5rem 0;
+    font-size: 0.82rem;
+    color: var(--text2);
+    border-bottom: 1px solid var(--grid);
+    line-height: 1.5;
+  }
+
+  .item:last-child { border-bottom: none; }
+
+  .item-icon {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding-top: 3px;
+    flex-shrink: 0;
+  }
+
+  .item-icon.deliver { color: var(--accent); }
+  .item-icon.partner { color: var(--accent3); }
+
+  .actions-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent3);
+    border-radius: 4px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .actions-section::before {
+    content: attr(data-label);
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--accent3);
+    letter-spacing: 0.15em;
+    display: block;
+    margin-bottom: 0.8rem;
+  }
+
+  .action-item {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    padding: 0.4rem 0;
+    font-size: 0.82rem;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .action-item:last-child { border-bottom: none; }
+  .action-num { font-family: var(--mono); font-size: 0.65rem; color: var(--accent3); padding-top: 2px; flex-shrink: 0; }
+
+  .progress-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 2rem;
+  }
+
+  .progress-seg {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    transition: background 0.3s;
+  }
+
+  .progress-seg.done { background: var(--accent); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text3);
+    background: var(--bg2);
+  }
+
+  .save-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text3);
+    padding: 0.4rem 1rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .save-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  @media (max-width: 700px) {
+    .input-grid { grid-template-columns: 1fr 1fr; }
+    .meta-row { grid-template-columns: 1fr 1fr; }
+    .month-content.active { grid-template-columns: 1fr; }
+    .timeline { flex-wrap: wrap; }
+    .month-tab { min-width: 30%; }
+  }
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<header>
+  <div class="logo">Sprint <span>//</span> OS</div>
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span>SYSTEM ONLINE</span>
+    <span id="clock"></span>
+  </div>
+</header>
+
+<div class="container">
+  <div class="input-section">
+    <div class="input-grid">
+      <div class="field">
+        <label>Startup Name</label>
+        <input type="text" id="startup-name" placeholder="e.g. Volta Energy" value="Volta Energy">
+      </div>
+      <div class="field">
+        <label>Vertical</label>
+        <select id="vertical">
+          <option value="ai_for_work">AI for Work</option>
+          <option value="energy_resilience" selected>Energy Resilience</option>
+          <option value="defense">Defense</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Stage</label>
+        <select id="stage">
+          <option value="pre_seed">Pre-Seed</option>
+          <option value="seed" selected>Seed</option>
+          <option value="series_a">Series A</option>
+        </select>
+      </div>
+      <button class="btn-generate" onclick="generate()">GENERATE</button>
+    </div>
+  </div>
+
+  <div class="dashboard" id="dashboard">
+    <div class="meta-row" id="meta-row"></div>
+    <div class="risks-section" id="risks-section"></div>
+    <div class="progress-bar" id="progress-bar"></div>
+    <div class="timeline" id="timeline"></div>
+    <div id="month-panels"></div>
+    <div class="actions-section" data-label="NEXT BEST ACTIONS" id="actions-section"></div>
+  </div>
+</div>
+
+<footer>
+  <span>SPRINT OS v1.0 — HEXA SPRINT INTERNAL</span>
+  <button class="save-btn" onclick="saveJSON()">EXPORT JSON</button>
+</footer>
+
+<script>
+const DATA = {
+  verticals: {
+    ai_for_work: {
+      label: 'AI for Work',
+      focus: ['Workflow automation audit','LLM integration strategy','Internal tool consolidation','Agent deployment pilot','Adoption and change management','Scale and iteration'],
+      risks: ['Over-engineering before product-market fit','Low user adoption of AI tools','Data privacy and compliance gaps']
+    },
+    energy_resilience: {
+      label: 'Energy Resilience',
+      focus: ['Grid resilience mapping','Regulatory landscape audit','Pilot site identification','Technical feasibility study','Partnership and offtake agreements','Fundraising preparation'],
+      risks: ['Long regulatory approval cycles','Capital intensity before revenue','Dependency on single offtake partner']
+    },
+    defense: {
+      label: 'Defense',
+      focus: ['Customer discovery with defence primes','Compliance and clearance roadmap','MVP definition for dual-use case','Pilot contract structuring','IP protection strategy','Government grant identification'],
+      risks: ['Long procurement cycles','Export control restrictions','Talent acquisition in cleared environments']
+    }
+  },
+  stages: {
+    pre_seed: { label: 'Pre-Seed', context: 'Focus is on founder-market fit, problem validation, and first 10 customers. Avoid building too early.' },
+    seed: { label: 'Seed', context: 'Product exists. Focus on repeatable customer acquisition and early retention signals.' },
+    series_a: { label: 'Series A', context: 'Unit economics matter now. Focus on scalable GTM and team structure for growth.' }
+  },
+  months: [
+    { theme: 'Diagnose', desc: 'Deep dive into the startup\'s current state. Map the team, product, customers, and blockers.',
+      deliverables: ['Company diagnostic report (team, product, GTM, financials)','Top 3 blocking issues identified with owners assigned','Sprint goals confirmed and signed off by founders'],
+      partner: ['Introductory calls with all co-founders','First board-level strategic alignment session','Network introductions: 3 relevant experts or potential customers'] },
+    { theme: 'Focus', desc: 'Narrow the company\'s focus to the highest-leverage activity. Kill distractions.',
+      deliverables: ['Prioritised OKRs for the next 90 days','Weekly cadence and reporting rhythm established','First set of action items cleared from Month 1 diagnostic'],
+      partner: ['Weekly 60-minute working session with founders','Fundraising narrative review if applicable','Intro to 2 potential investors or strategic partners'] },
+    { theme: 'Build', desc: 'Execute. The startup is heads-down building or selling. Partner provides unblocking support.',
+      deliverables: ['Mid-sprint milestone review against Month 1 goals','Updated financial model or runway projection','At least 1 new customer conversation or pilot initiated'],
+      partner: ['Bi-weekly check-ins (30 min)','One deep-dive session on a specific blocker','Help close 1 key hire or advisor if needed'] },
+    { theme: 'Validate', desc: 'Test assumptions with the market. Get external signal. Adjust based on evidence, not opinion.',
+      deliverables: ['Customer feedback synthesis (min. 5 conversations)','Revised product or GTM hypothesis if signal warrants it','Competitive landscape updated'],
+      partner: ['Customer introduction pipeline review','Press or visibility opportunity identified','Fundraising data room review if applicable'] },
+    { theme: 'Accelerate', desc: 'Double down on what is working. Cut what is not. Prepare for the next phase.',
+      deliverables: ['Growth metric baseline established','Next funding round or revenue target defined','Team gaps identified and hiring plan drafted'],
+      partner: ['Warm introductions to 3 Series A investors if pre-seed/seed','Help define the post-Sprint roadmap','Alumni network activation for distribution or partnership'] },
+    { theme: 'Launch', desc: 'Exit the Sprint programme with momentum. Public signal, investor narrative, and a clear next chapter.',
+      deliverables: ['Sprint retrospective and lessons learned document','Updated investor deck and data room','Demo Day preparation: pitch, narrative, metrics'],
+      partner: ['Demo Day organisation and coaching','Final network introductions','Post-Sprint support plan agreed'] }
+  ]
+};
+
+let currentPlan = null;
+let activeMonth = 0;
+
+function generate() {
+  const name = document.getElementById('startup-name').value.trim() || 'Unnamed Startup';
+  const vertKey = document.getElementById('vertical').value;
+  const stageKey = document.getElementById('stage').value;
+  const vert = DATA.verticals[vertKey];
+  const stage = DATA.stages[stageKey];
+
+  currentPlan = { name, vertical: vert.label, stage: stage.label, vertKey, stageKey, generated: new Date().toISOString() };
+
+  const meta = document.getElementById('meta-row');
+  meta.innerHTML = `
+    <div class="meta-card"><div class="label">Startup</div><div class="value">${name}</div></div>
+    <div class="meta-card"><div class="label">Vertical</div><div class="value">${vert.label}</div></div>
+    <div class="meta-card"><div class="label">Stage</div><div class="value">${stage.label}</div></div>
+    <div class="meta-card"><div class="label">Duration</div><div class="value">6 Months</div></div>
+  `;
+
+  const risks = document.getElementById('risks-section');
+  risks.innerHTML = vert.risks.map(r => `
+    <div class="risk-item"><span class="risk-icon">!</span><span>${r}</span></div>
+  `).join('');
+
+  const progress = document.getElementById('progress-bar');
+  progress.innerHTML = DATA.months.map(() => `<div class="progress-seg"></div>`).join('');
+
+  const timeline = document.getElementById('timeline');
+  timeline.innerHTML = DATA.months.map((m, i) => `
+    <div class="month-tab ${i === 0 ? 'active' : ''}" onclick="showMonth(${i})">
+      <span class="month-num">M0${i+1}</span>
+      <span class="month-theme">${m.theme}</span>
+    </div>
+  `).join('');
+
+  const panels = document.getElementById('month-panels');
+  panels.innerHTML = DATA.months.map((m, i) => `
+    <div class="month-content ${i === 0 ? 'active' : ''}" id="panel-${i}">
+      <div class="month-header">
+        <div class="theme-label">M0${i+1} — ${m.theme}</div>
+        <div class="vertical-focus">VERTICAL FOCUS: ${vert.focus[i]}</div>
+        <div class="description">${m.desc}</div>
+      </div>
+      <div>
+        <div class="col-label">Deliverables</div>
+        ${m.deliverables.map(d => `<div class="item"><span class="item-icon deliver">></span><span>${d}</span></div>`).join('')}
+      </div>
+      <div>
+        <div class="col-label">Partner Actions</div>
+        ${m.partner.map(p => `<div class="item"><span class="item-icon partner">//</span><span>${p}</span></div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  const actions = document.getElementById('actions-section');
+  const nextActions = [
+    `Schedule Month 1 diagnostic call with ${name} founders this week`,
+    'Share this plan with the startup for co-creation and buy-in',
+    'Assign a primary partner contact for weekly cadence',
+    'Add to Sprint OS dashboard and set Month 1 milestone reminders'
+  ];
+  actions.innerHTML = nextActions.map((a, i) => `
+    <div class="action-item"><span class="action-num">0${i+1}</span><span>${a}</span></div>
+  `).join('');
+
+  activeMonth = 0;
+  document.getElementById('dashboard').classList.add('active');
+  updateProgress(0);
+}
+
+function showMonth(i) {
+  document.querySelectorAll('.month-tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
+  document.querySelectorAll('.month-content').forEach((p, idx) => p.classList.toggle('active', idx === i));
+  activeMonth = i;
+  updateProgress(i);
+}
+
+function updateProgress(active) {
+  document.querySelectorAll('.progress-seg').forEach((seg, i) => {
+    seg.classList.toggle('done', i <= active);
+  });
+}
+
+function saveJSON() {
+  if (!currentPlan) return;
+  const blob = new Blob([JSON.stringify(currentPlan, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${currentPlan.name.toLowerCase().replace(/\s+/g,'_')}_sprint_plan.json`;
+  a.click();
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toISOString().replace('T',' ').slice(0,19) + ' UTC';
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+generate();
+</script>
+</body>
+</html>
